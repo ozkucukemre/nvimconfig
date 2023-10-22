@@ -8,21 +8,14 @@
 -- * add extra plugins
 -- * disable/enabled LazyVim plugins
 -- * override the configuration of LazyVim plugins
+
 return {
   {
     "L3MON4D3/LuaSnip",
-
     opts = {
       history = true,
       delete_check_events = "TextChanged",
     }
-  },
-
-  -- change trouble config
-  {
-    "folke/trouble.nvim",
-    -- opts will be merged with the parent spec
-    opts = { use_diagnostic_signs = true },
   },
 
   -- disable trouble
@@ -107,6 +100,7 @@ return {
         end)
       end,
     },
+    
     ---@class PluginLspOpts
     opts = {
       ---@type lspconfig.options
@@ -179,44 +173,21 @@ return {
     end,
   },
 
-  -- or you can return new options to override all the defaults
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function()
-      return {
-        --[[add your custom lualine config here]]
-      }
-    end,
-  },
-
   -- use mini.starter instead of alpha
-  { import = "lazyvim.plugins.extras.ui.mini-starter" },
+  -- { import = "lazyvim.plugins.extras.ui.mini-starter" },
 
   -- add jsonls and schemastore packages, and setup treesitter for json, json5 and jsonc
   { import = "lazyvim.plugins.extras.lang.json" },
 
   -- add any tools you want to have installed below
-  {
-    "williamboman/mason.nvim",
-    opts = {
-      ensure_installed = {
-        "stylua",
-        "shellcheck",
-        "shfmt",
-        "flake8",
-      },
-    },
-  },
-
   -- Use <tab> for completion and snippets (supertab)
   -- first: disable default <tab> and <s-tab> behavior in LuaSnip
-  {
-    "L3MON4D3/LuaSnip",
-    keys = function()
-      return {}
-    end,
-  },
+  -- {
+  --   "L3MON4D3/LuaSnip",
+  --   keys = function()
+  --     return {}
+  --   end,
+  -- },
   -- then: setup supertab in cmp
   {
     "hrsh7th/nvim-cmp",
@@ -235,7 +206,7 @@ return {
       local cmp = require("cmp")
 
       opts.mapping = vim.tbl_extend("force", opts.mapping, {
-        ["<Tab>"] = cmp.mapping(function(fallback)
+        ["<C-j>"] = cmp.mapping(function(fallback)
           if cmp.visible() then
             cmp.select_next_item()
             -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable()
@@ -248,7 +219,7 @@ return {
             fallback()
           end
         end, { "i", "s" }),
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
+        ["<C-k>"] = cmp.mapping(function(fallback)
           if cmp.visible() then
             cmp.select_prev_item()
           elseif luasnip.jumpable(-1) then
@@ -320,5 +291,81 @@ return {
         sorting = defaults.sorting,
       }
     end,
-  }
+  },
+
+  {
+    "max397574/better-escape.nvim",
+    event = "InsertEnter",
+    config = function()
+      require("better_escape").setup {
+        mapping = { "jk", "jj", "kj" }, -- a table with mappings to use
+        timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
+        clear_empty_lines = false, -- clear line after escaping if there is only whitespace
+        keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
+        -- example(recommended)
+        -- keys = function()
+        --   return vim.api.nvim_win_get_cursor(0)[2] > 1 and '<esc>l' or '<esc>'
+        -- end,)
+      }
+    end,
+  },
+  {
+    "kana/vim-textobj-entire",
+    lazy = false,
+    dependencies = {
+      "kana/vim-textobj-user",
+    },
+  },
+
+  {
+    "https://github.com/lervag/vimtex",
+    lazy = false,
+  },
+
+  {
+    "rbonvall/vim-textobj-latex",
+    lazy = false,
+    dependencies = {
+      "kana/vim-textobj-user",
+    },
+  },
+
+  {
+    "gaoDean/autolist.nvim",
+    ft = {
+      "markdown",
+      "text",
+      "tex",
+      "plaintex",
+      "norg",
+    },
+    config = function()
+      require("autolist").setup()
+
+      vim.keymap.set("i", "<tab>", "<cmd>AutolistTab<cr>")
+      vim.keymap.set("i", "<s-tab>", "<cmd>AutolistShiftTab<cr>")
+      -- vim.keymap.set("i", "<c-t>", "<c-t><cmd>AutolistRecalculate<cr>") -- an example of using <c-t> to indent
+      vim.keymap.set("i", "<CR>", "emre")
+      -- <ESC>o<cmd>AutolistNewBullet<cr><cmd>AutolistRecalculate<cr>
+      vim.keymap.set("n", "o", "o<cmd>AutolistNewBullet<cr>")
+      vim.keymap.set("n", "O", "O<cmd>AutolistNewBulletBefore<cr>")
+      vim.keymap.set("n", "<CR>", "<cmd>AutolistToggleCheckbox<cr><CR>")
+      -- vim.keymap.set("n", "<C-r>", "<cmd>AutolistRecalculate<cr>")
+      -- calismiyo amk wtf
+
+      -- cycle list types with dot-repeat
+      vim.keymap.set("n", "<leader>cn", require("autolist").cycle_next_dr, { expr = true })
+      vim.keymap.set("n", "<leader>cp", require("autolist").cycle_prev_dr, { expr = true })
+
+      -- if you don't want dot-repeat
+      -- vim.keymap.set("n", "<leader>cn", "<cmd>AutolistCycleNext<cr>")
+      -- vim.keymap.set("n", "<leader>cp", "<cmd>AutolistCycleNext<cr>")
+
+      -- functions to recalculate list on edit
+      vim.keymap.set("n", ">>", ">><cmd>AutolistRecalculate<cr>")
+      vim.keymap.set("n", "<<", "<<<cmd>AutolistRecalculate<cr>")
+      vim.keymap.set("n", "dd", "dd<cmd>AutolistRecalculate<cr>")
+      vim.keymap.set("v", "d", "d<cmd>AutolistRecalculate<cr>")
+    end,
+  },
 }
